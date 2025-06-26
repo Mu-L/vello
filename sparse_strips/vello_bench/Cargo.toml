@@ -24,5 +24,9 @@ usvg = { workspace = true }
 name = "main"
 harness = false
 
+[[bin]]
+name = "profile"
+path = "src/profile.rs"
+
 [lints]
 workspace = true
