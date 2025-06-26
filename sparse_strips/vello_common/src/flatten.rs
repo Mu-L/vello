@@ -114,8 +114,8 @@ pub fn stroke(path: &BezPath, style: &Stroke, affine: Affine, ctx: &mut StrokeCt
     // TODO: Temporary hack to ensure that strokes are scaled properly by the transform.
     let tolerance = TOL / affine.as_coeffs()[0].abs().max(affine.as_coeffs()[3].abs());
 
-    let expanded = expand_stroke(path.iter(), style, ctx, tolerance);
-    fill(&expanded, affine, line_buf);
+    expand_stroke(path.iter(), style, ctx, tolerance);
+    fill(&ctx.output, affine, line_buf);
 }
 
 /// Expand a stroked path to a filled path.
@@ -124,9 +124,8 @@ pub fn expand_stroke(
     style: &Stroke,
     ctx: &mut StrokeCtx,
     tolerance: f64,
-) -> BezPath {
+) {
     kurbo::stroke(path, style, &StrokeOpts::default(), ctx, tolerance);
-    ctx.output.clone()
 }
 
 fn close_path(start: kurbo::Point, p0: kurbo::Point, line_buf: &mut Vec<Line>) {

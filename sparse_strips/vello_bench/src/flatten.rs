@@ -47,7 +47,6 @@ pub fn strokes(c: &mut Criterion) {
         ($item:expr) => {
             g.bench_function($item.name.clone(), |b| {
                 b.iter(|| {
-                    let mut paths = vec![];
                     let mut ctx = StrokeCtx::new();
 
                     for path in &$item.strokes {
@@ -55,10 +54,9 @@ pub fn strokes(c: &mut Criterion) {
                             width: path.stroke_width as f64,
                             ..Default::default()
                         };
-                        paths.push(flatten::expand_stroke(path.path.iter(), &stroke, &mut ctx, 0.25));
+                        flatten::expand_stroke(path.path.iter(), &stroke, &mut ctx, 0.25);
+                        std::hint::black_box(&ctx.output);
                     }
-
-                    std::hint::black_box(&paths);
                 })
             });
         };

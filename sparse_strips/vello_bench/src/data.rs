@@ -107,7 +107,8 @@ impl DataItem {
                 width: path.stroke_width as f64,
                 ..Default::default()
             };
-            paths.push(flatten::expand_stroke(path.path.iter(), &stroke, &mut ctx, 0.25));
+            flatten::expand_stroke(path.path.iter(), &stroke, &mut ctx, 0.25);
+            paths.push(ctx.output.clone());
         }
 
         paths
