@@ -5,6 +5,7 @@ use std::env;
 use std::time::Instant;
 use vello_common::flatten;
 use vello_common::kurbo::Stroke;
+use vello_cpu::kurbo::StrokeCtx;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -34,13 +35,14 @@ fn main() {
 
     for _ in 0..iterations {
         let start = Instant::now();
+        let mut ctx = StrokeCtx::new();
         
         for path in &item.strokes {
             let stroke = Stroke {
                 width: path.stroke_width as f64,
                 ..Default::default()
             };
-            let _expanded = flatten::expand_stroke(path.path.iter(), &stroke, 0.25);
+            let _expanded = flatten::expand_stroke(path.path.iter(), &stroke, &mut ctx, 0.25);
         }
         
         total_duration += start.elapsed();

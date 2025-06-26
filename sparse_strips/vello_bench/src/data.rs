@@ -7,7 +7,7 @@ use usvg::tiny_skia_path::PathSegment;
 use usvg::{Group, Node};
 use vello_common::fearless_simd::Level;
 use vello_common::flatten::Line;
-use vello_common::kurbo::{Affine, BezPath, Stroke};
+use vello_common::kurbo::{Affine, BezPath, Stroke, StrokeCtx};
 use vello_common::peniko::Fill;
 use vello_common::strip::Strip;
 use vello_common::tile::Tiles;
@@ -78,6 +78,7 @@ impl DataItem {
     pub fn lines(&self) -> Vec<Line> {
         let mut line_buf = vec![];
         let mut temp_buf = vec![];
+        let mut ctx = StrokeCtx::new();
 
         for path in &self.fills {
             flatten::fill(&path.path, path.transform, &mut temp_buf);
@@ -89,7 +90,7 @@ impl DataItem {
                 width: path.stroke_width as f64,
                 ..Default::default()
             };
-            flatten::stroke(&path.path, &stroke, path.transform, &mut temp_buf);
+            flatten::stroke(&path.path, &stroke, path.transform, &mut ctx, &mut temp_buf);
             line_buf.extend(&temp_buf);
         }
 
@@ -99,13 +100,14 @@ impl DataItem {
     /// Get the expanded strokes.
     pub fn expanded_strokes(&self) -> Vec<BezPath> {
         let mut paths = vec![];
+        let mut ctx = StrokeCtx::new();
 
         for path in &self.strokes {
             let stroke = Stroke {
                 width: path.stroke_width as f64,
                 ..Default::default()
             };
-            paths.push(flatten::expand_stroke(path.path.iter(), &stroke, 0.25));
+            paths.push(flatten::expand_stroke(path.path.iter(), &stroke, &mut ctx, 0.25));
         }
 
         paths

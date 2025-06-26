@@ -1,7 +1,7 @@
 // Copyright 2025 the Vello Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use crate::kurbo::{Affine, BezPath, Stroke};
+use crate::kurbo::{Affine, BezPath, Stroke, StrokeCtx};
 use crate::peniko::Fill;
 use alloc::vec::Vec;
 use vello_common::fearless_simd::Level;
@@ -17,6 +17,7 @@ pub(crate) struct StripGenerator {
     line_buf: Vec<Line>,
     tiles: Tiles,
     strip_buf: Vec<Strip>,
+    stroke_ctx: StrokeCtx,
     width: u16,
     height: u16,
 }
@@ -29,6 +30,7 @@ impl StripGenerator {
             line_buf: Vec::new(),
             tiles: Tiles::new(),
             strip_buf: Vec::new(),
+            stroke_ctx: StrokeCtx::new(),
             width,
             height,
         }
@@ -53,7 +55,7 @@ impl StripGenerator {
         transform: Affine,
         func: impl FnOnce(&'a [Strip]),
     ) {
-        flatten::stroke(path, stroke, transform, &mut self.line_buf);
+        flatten::stroke(path, stroke, transform, &mut self.stroke_ctx, &mut self.line_buf);
         self.make_strips(Fill::NonZero);
         func(&mut self.strip_buf);
     }
@@ -67,6 +69,7 @@ impl StripGenerator {
         self.tiles.reset();
         self.alphas.clear();
         self.strip_buf.clear();
+        self.stroke_ctx.reset();
     }
 
     fn make_strips(&mut self, fill_rule: Fill) {

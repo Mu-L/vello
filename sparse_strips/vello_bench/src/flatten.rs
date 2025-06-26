@@ -4,7 +4,7 @@
 use crate::data::get_data_items;
 use criterion::Criterion;
 use vello_common::flatten;
-use vello_common::kurbo::Stroke;
+use vello_common::kurbo::{Stroke, StrokeCtx};
 use vello_cpu::kurbo::Affine;
 
 pub fn flatten(c: &mut Criterion) {
@@ -48,13 +48,14 @@ pub fn strokes(c: &mut Criterion) {
             g.bench_function($item.name.clone(), |b| {
                 b.iter(|| {
                     let mut paths = vec![];
+                    let mut ctx = StrokeCtx::new();
 
                     for path in &$item.strokes {
                         let stroke = Stroke {
                             width: path.stroke_width as f64,
                             ..Default::default()
                         };
-                        paths.push(flatten::expand_stroke(path.path.iter(), &stroke, 0.25));
+                        paths.push(flatten::expand_stroke(path.path.iter(), &stroke, &mut ctx, 0.25));
                     }
 
                     std::hint::black_box(&paths);

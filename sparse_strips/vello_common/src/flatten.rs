@@ -5,6 +5,7 @@
 
 use crate::kurbo::{self, Affine, BezPath, PathEl, Stroke, StrokeOpts};
 use alloc::vec::Vec;
+use peniko::kurbo::StrokeCtx;
 
 /// The flattening tolerance.
 const TOL: f64 = 0.25;
@@ -109,11 +110,11 @@ pub fn fill(path: &BezPath, affine: Affine, line_buf: &mut Vec<Line>) {
 }
 
 /// Flatten a stroked bezier path into line segments.
-pub fn stroke(path: &BezPath, style: &Stroke, affine: Affine, line_buf: &mut Vec<Line>) {
+pub fn stroke(path: &BezPath, style: &Stroke, affine: Affine, ctx: &mut StrokeCtx, line_buf: &mut Vec<Line>) {
     // TODO: Temporary hack to ensure that strokes are scaled properly by the transform.
     let tolerance = TOL / affine.as_coeffs()[0].abs().max(affine.as_coeffs()[3].abs());
 
-    let expanded = expand_stroke(path.iter(), style, tolerance);
+    let expanded = expand_stroke(path.iter(), style, ctx, tolerance);
     fill(&expanded, affine, line_buf);
 }
 
@@ -121,9 +122,11 @@ pub fn stroke(path: &BezPath, style: &Stroke, affine: Affine, line_buf: &mut Vec
 pub fn expand_stroke(
     path: impl IntoIterator<Item = PathEl>,
     style: &Stroke,
+    ctx: &mut StrokeCtx,
     tolerance: f64,
 ) -> BezPath {
-    kurbo::stroke(path, style, &StrokeOpts::default(), tolerance)
+    kurbo::stroke(path, style, &StrokeOpts::default(), ctx, tolerance);
+    ctx.output.clone()
 }
 
 fn close_path(start: kurbo::Point, p0: kurbo::Point, line_buf: &mut Vec<Line>) {

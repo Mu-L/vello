@@ -9,7 +9,7 @@ use vello_common::coarse::Wide;
 use vello_common::fearless_simd::Level;
 use vello_common::flatten::Line;
 use vello_common::glyph::{GlyphRenderer, GlyphRunBuilder, GlyphType, PreparedGlyph};
-use vello_common::kurbo::{Affine, BezPath, Cap, Join, Rect, Shape, Stroke};
+use vello_common::kurbo::{Affine, BezPath, Cap, Join, Rect, Shape, Stroke, StrokeCtx};
 use vello_common::mask::Mask;
 use vello_common::paint::{Paint, PaintType};
 use vello_common::peniko::Font;
@@ -124,7 +124,8 @@ impl Scene {
         if !self.paint_visible {
             return;
         }
-        flatten::stroke(path, &self.stroke, self.transform, &mut self.line_buf);
+        let mut ctx = StrokeCtx::new();
+        flatten::stroke(path, &self.stroke, self.transform, &mut ctx, &mut self.line_buf);
         let paint = self.encode_current_paint();
         self.render_path(Fill::NonZero, paint);
     }
@@ -289,12 +290,14 @@ impl GlyphRenderer for Scene {
     }
 
     fn stroke_glyph(&mut self, prepared_glyph: PreparedGlyph<'_>) {
+        let mut ctx = StrokeCtx::new();
         match prepared_glyph.glyph_type {
             GlyphType::Outline(glyph) => {
                 flatten::stroke(
                     glyph.path,
                     &self.stroke,
                     prepared_glyph.transform,
+                    &mut ctx,
                     &mut self.line_buf,
                 );
                 let paint = self.encode_current_paint();
