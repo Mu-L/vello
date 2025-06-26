@@ -50,3 +50,6 @@ pico_svg = ["dep:roxmltree"]
 
 [lints]
 workspace = true
+
+[patch.crates-io]
+kurbo = {git =  "https://github.com/linebender/kurbo", rev = "4ecf72d2516cd91acfce26c78be0c89fc0e0125e"  }
