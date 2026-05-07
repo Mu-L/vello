@@ -1539,6 +1539,7 @@ impl WebGlPrograms {
 
         // Take ownership of the luts to avoid copying, then resize for texture padding.
         let mut luts = gradient_cache.take_luts();
+        let old_luts_len = luts.len();
         luts.resize(total_capacity, 0);
 
         gl.active_texture(WebGl2RenderingContext::TEXTURE0);
@@ -1561,6 +1562,7 @@ impl WebGlPrograms {
         .unwrap();
 
         // Restore the luts back to the cache.
+        luts.truncate(old_luts_len);
         gradient_cache.restore_luts(luts);
     }
 
